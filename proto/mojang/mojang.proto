@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+service Mojang {
+  rpc GetProfile(ProfileRequest) returns (ProfileReponse);
+}
+
+message ProfileRequest {
+  string name = 1;
+}
+
+message ProfileReponse {
+  string name = 1;
+  string id = 2;
+}

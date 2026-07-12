@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+service Hypixel {
+  rpc GetNetworth(SkyBlockRequest) returns (NetworthResponse);
+  rpc GetDungeonsStats(SkyBlockRequest) returns (DungeonsStatsResponse);
+}
+
+
+
+
+
+message SkyBlockRequest {
+  string uuid = 1;
+  string profileName = 2;
+}
+
+
+
+
+message NetworthResponse {
+  double total = 1;
+  double nonCosmetic = 2;
+}
+
+
+
+
+message DungeonClasses {
+  double healer = 1;
+  double mage = 2;
+  double tank = 3;
+  double berserk = 4;
+  double archer = 5;
+}
+
+message DungeonFloorStats {
+  double completions = 1;
+  double personalBest = 2;
+}
+
+message DungeonsStatsResponse {
+  double classAverage = 1;
+  double catacombsLevel = 2;
+  string selectedClass = 3;
+  double selectedClassLevel = 4;
+  double secretsFound = 5;
+  DungeonClasses classLevel = 6;
+  DungeonFloorStats m7 = 7;
+  DungeonFloorStats entrance = 8;
+  DungeonFloorStats f1 = 9;
+  DungeonFloorStats f2 = 10;
+  DungeonFloorStats f3 = 11;
+  DungeonFloorStats f4 = 12;
+  DungeonFloorStats f5 = 13;
+  DungeonFloorStats f6 = 14;
+  DungeonFloorStats f7 = 15;
+  DungeonFloorStats m1 = 16;
+  DungeonFloorStats m2 = 17;
+  DungeonFloorStats m3 = 18;
+  DungeonFloorStats m4 = 19;
+  DungeonFloorStats m5 = 20;
+  DungeonFloorStats m6 = 21;
+}
