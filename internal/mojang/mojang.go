@@ -3,6 +3,7 @@ package mojang
 import (
 	"context"
 
+	"github.com/chickeniq/hypixel-go/pkg/cache"
 	"github.com/chickeniq/hypixel-go/pkg/mojang"
 	pb "github.com/chickeniq/hypixel-go/proto/mojang"
 	"google.golang.org/grpc"
@@ -13,8 +14,8 @@ type Server struct {
 	client *mojang.Client
 }
 
-func Register(s grpc.ServiceRegistrar) {
-	pb.RegisterMojangServer(s, &Server{client: mojang.NewClient()})
+func Register(s grpc.ServiceRegistrar, cache *cache.Cache) {
+	pb.RegisterMojangServer(s, &Server{client: mojang.NewClient(cache)})
 }
 
 func (s *Server) GetProfile(ctx context.Context, req *pb.ProfileRequest) (*pb.ProfileReponse, error) {

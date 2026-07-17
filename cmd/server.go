@@ -22,8 +22,8 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
-	hypixel.Register(grpcServer, apiKey)
-	mojang.Register(grpcServer)
+	hypixel.Register(grpcServer, apiKey, nil)
+	mojang.Register(grpcServer, nil)
 
 	log.Fatal(grpcServer.Serve(listener))
 }

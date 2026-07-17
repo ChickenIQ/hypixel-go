@@ -7,43 +7,50 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/chickeniq/hypixel-go/pkg/cache"
 )
 
 type Client struct {
+	cache  *cache.Cache
 	http   http.Client
 	apiKey string
 }
 
-func NewClient(apiKey string) *Client {
+func NewClient(apiKey string, cache *cache.Cache) *Client {
 	return &Client{
+		cache:  cache,
 		apiKey: apiKey,
 		http:   http.Client{Timeout: 10 * time.Second},
 	}
 }
 
 func (c *Client) get(ctx context.Context, path string) ([]byte, error) {
-	u := fmt.Sprintf("%s/%s", "https://api.hypixel.net/v2", strings.TrimPrefix(path, "/"))
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
-	if err != nil {
-		return nil, err
-	}
+	url := fmt.Sprintf("%s/%s", "https://api.hypixel.net/v2", strings.TrimPrefix(path, "/"))
 
-	req.Header.Set("API-Key", c.apiKey)
+	return cache.Do(ctx, c.cache, url, func(ctx context.Context) ([]byte, error) {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		if err != nil {
+			return nil, err
+		}
 
-	resp, err := c.http.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
+		req.Header.Set("API-Key", c.apiKey)
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
+		resp, err := c.http.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("hypixel returned %s: %s", resp.Status, body)
-	}
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
 
-	return body, nil
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("hypixel returned %s: %s", resp.Status, body)
+		}
+
+		return body, nil
+	})
 }
