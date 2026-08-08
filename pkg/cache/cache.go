@@ -19,7 +19,7 @@ func NewCache(connectionString string, ttl, timeout time.Duration) (*Cache, erro
 	if ttl < time.Millisecond {
 		return nil, fmt.Errorf("invalid cache TTL: %v", ttl)
 	}
-	
+
 	if timeout < time.Millisecond {
 		return nil, fmt.Errorf("invalid cache timeout: %v", timeout)
 	}
