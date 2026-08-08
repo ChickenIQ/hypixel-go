@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/chickeniq/hypixel-go/pkg/cache"
@@ -14,15 +15,16 @@ import (
 func NewClient(cache *cache.Cache) *Client {
 	return &Client{
 		cache: cache,
-		http:  http.Client{Timeout: 10 * time.Second},
+		http:  http.Client{Timeout: 15 * time.Second},
 	}
 }
 
 func (c *Client) GetProfile(ctx context.Context, username string) (*Profile, error) {
-	url := "https://api.minecraftservices.com/minecraft/profile/lookup/name/" + username
+	dest := "https://api.minecraftservices.com/minecraft/profile/lookup/name/" + url.QueryEscape(username)
+	cacheKey := fmt.Sprintf("%s:%s", "mojang", dest)
 
-	body, err := cache.Do(ctx, c.cache, url, func(ctx context.Context) ([]byte, error) {
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	body, err := c.cache.Do(ctx, cacheKey, func(ctx context.Context) ([]byte, error) {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, dest, nil)
 		if err != nil {
 			return nil, err
 		}

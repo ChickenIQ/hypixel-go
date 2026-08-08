@@ -5,25 +5,15 @@ service Hypixel {
   rpc GetDungeonsStats(SkyBlockRequest) returns (DungeonsStatsResponse);
 }
 
-
-
-
-
 message SkyBlockRequest {
   string uuid = 1;
   string profileName = 2;
 }
 
-
-
-
 message NetworthResponse {
   double total = 1;
   double nonCosmetic = 2;
 }
-
-
-
 
 message DungeonClasses {
   double healer = 1;

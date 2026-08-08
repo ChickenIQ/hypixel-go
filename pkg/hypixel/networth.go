@@ -33,8 +33,9 @@ func (c *Client) GetNetworth(ctx context.Context, uuid, profileName string) (*Ne
 		return nil, fmt.Errorf("create networth calculator: %w", err)
 	}
 
+	opts := nw.NetworthOptions{OnlyNetworth: true}
 	return &Networth{
-		NonCosmetic: calculator.GetNonCosmeticNetworth().Networth,
-		Total:       calculator.GetNetworth().Networth,
+		NonCosmetic: calculator.GetNonCosmeticNetworth(opts).Networth,
+		Total:       calculator.GetNetworth(opts).Networth,
 	}, nil
 }

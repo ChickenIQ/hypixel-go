@@ -21,15 +21,16 @@ func NewClient(apiKey string, cache *cache.Cache) *Client {
 	return &Client{
 		cache:  cache,
 		apiKey: apiKey,
-		http:   http.Client{Timeout: 10 * time.Second},
+		http:   http.Client{Timeout: 15 * time.Second},
 	}
 }
 
 func (c *Client) get(ctx context.Context, path string) ([]byte, error) {
-	url := fmt.Sprintf("%s/%s", "https://api.hypixel.net/v2", strings.TrimPrefix(path, "/"))
+	dest := fmt.Sprintf("%s/%s", "https://api.hypixel.net/v2", strings.TrimPrefix(path, "/"))
+	cacheKey := fmt.Sprintf("%s:%s", "hypixel", dest)
 
-	return cache.Do(ctx, c.cache, url, func(ctx context.Context) ([]byte, error) {
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	return c.cache.Do(ctx, cacheKey, func(ctx context.Context) ([]byte, error) {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, dest, nil)
 		if err != nil {
 			return nil, err
 		}

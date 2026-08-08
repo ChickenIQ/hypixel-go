@@ -2,40 +2,62 @@ package cache
 
 import (
 	"context"
+	"fmt"
 	"time"
+
+	"github.com/valkey-io/valkey-go"
+	"github.com/valkey-io/valkey-go/valkeyaside"
 )
 
-type Provider interface {
-	Put(ctx context.Context, key string, value []byte, ttl time.Duration) error
-	Get(ctx context.Context, key string) ([]byte, bool, error)
-}
-
 type Cache struct {
-	Provider Provider
-	TTL      time.Duration
+	client  valkeyaside.CacheAsideClient
+	ttl     time.Duration
+	timeout time.Duration
 }
 
-func Do(ctx context.Context, c *Cache, key string, fn func(context.Context) ([]byte, error)) ([]byte, error) {
-	if c == nil || c.Provider == nil {
+func NewCache(connectionString string, ttl, timeout time.Duration) (*Cache, error) {
+	if ttl < time.Millisecond {
+		return nil, fmt.Errorf("invalid cache TTL: %v", ttl)
+	}
+	
+	if timeout < time.Millisecond {
+		return nil, fmt.Errorf("invalid cache timeout: %v", timeout)
+	}
+
+	options, err := valkey.ParseURL(connectionString)
+	if err != nil {
+		return nil, fmt.Errorf("parse Valkey URL: %w", err)
+	}
+
+	client, err := valkeyaside.NewClient(valkeyaside.ClientOption{ClientOption: options})
+	if err != nil {
+		return nil, fmt.Errorf("create valkey client: %w", err)
+	}
+
+	return &Cache{client: client, ttl: ttl, timeout: timeout}, nil
+}
+
+func (c *Cache) Do(ctx context.Context, key string, fn func(context.Context) ([]byte, error)) ([]byte, error) {
+	if c == nil || c.client == nil {
 		return fn(ctx)
 	}
 
-	value, found, err := c.Provider.Get(ctx, key)
+	cacheCtx, cancel := context.WithTimeout(ctx, c.timeout)
+	defer cancel()
+
+	value, err := c.client.Get(cacheCtx, c.ttl, key, func(ctx context.Context, _ string) (string, error) {
+		data, err := fn(ctx)
+		return string(data), err
+	})
 	if err != nil {
 		return nil, err
 	}
-	if found {
-		return value, nil
-	}
 
-	data, err := fn(ctx)
-	if err != nil {
-		return nil, err
-	}
+	return []byte(value), nil
+}
 
-	if err := c.Provider.Put(ctx, key, data, c.TTL); err != nil {
-		return nil, err
+func (c *Cache) Close() {
+	if c != nil && c.client != nil {
+		c.client.Close()
 	}
-
-	return data, nil
 }

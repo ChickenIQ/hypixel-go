@@ -6,6 +6,7 @@ require (
 	github.com/DuckySoLucky/SkyCrypt-Types v0.1.25
 	github.com/SkyCryptWebsite/SkyHelper-Networth-Go v1.2.21
 	github.com/valkey-io/valkey-go v1.0.76
+	github.com/valkey-io/valkey-go/valkeyaside v1.0.76
 	google.golang.org/grpc v1.82.1
 	google.golang.org/protobuf v1.36.11
 )
